@@ -7,10 +7,6 @@ pipeline {
   environment {
     DOCKER_TAG = sh(script: 'echo $BUILD_NUMBER', returnStdout: true).trim()
   }
-  options {
-    // Ejecutar el pipeline como usuario root
-    runAsUser('root')
-  }
 
   stages {
     stage('Checkout') {
