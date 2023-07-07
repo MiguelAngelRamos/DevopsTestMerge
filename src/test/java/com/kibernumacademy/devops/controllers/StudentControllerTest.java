@@ -1,13 +1,12 @@
 package com.kibernumacademy.devops.controllers;
 
-import com.kibernumacademy.devops.controllers.StudentController;
 import com.kibernumacademy.devops.entitys.Student;
 import com.kibernumacademy.devops.services.IStudentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-// import org.springframework.http.MediaType;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.thymeleaf.spring5.SpringTemplateEngine;
@@ -16,18 +15,19 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.util.Arrays;
-// import java.util.Optional;
+import java.util.Optional;
 
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-// import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-// import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-//* Esta es una clase para las pruebas de integración con mockito para el Proyecto de Devops desde la Rama feature
+//* Clase de Pruebas completada
 public class StudentControllerTest {
-   // MockMvc es una clase que proporciona una API de alto nivel para realizar pruebas con Spring MVC
+
+    // MockMvc es una clase que proporciona una API de alto nivel para realizar pruebas con Spring MVC
     private MockMvc mockMvc;
 
     // Con la anotación @Mock, Mockito crea un objeto simulado (mock) de la interfaz IStudentService
@@ -96,4 +96,76 @@ public class StudentControllerTest {
                 .andExpect(status().isOk())  // Espera que el estado HTTP sea 200 (OK)
                 .andExpect(view().name("students"));  // Espera que la vista devuelta sea "students"
     }
+
+    @Test
+    // El test verifica que se puede obtener un estudiante por su ID para editarlo
+    public void shouldGetStudentByIdForEdit() throws Exception {
+        // Crea un estudiante
+        Student student = new Student("James", "Gosling", "jgosling@example.com");
+        student.setId(1L);
+
+        // Simula la respuesta del método getStudentById de studentService
+        given(studentService.getStudentById(anyLong())).willReturn(Optional.of(student));
+
+        // Realiza una solicitud GET a "/students/edit/1"
+        mockMvc.perform(get("/students/edit/1"))
+                .andExpect(status().isOk())  // Espera que el estado HTTP sea 200 (OK)
+                .andExpect(view().name("edit_student"));  // Espera que la vista devuelta sea "edit_student"
+    }
+
+    @Test
+    // El test verifica que se puede acceder a la página de creación de un nuevo estudiante
+    public void shouldCreateNewStudent() throws Exception {
+        mockMvc.perform(get("/students/new"))
+                .andExpect(status().isOk())  // Espera que el estado HTTP sea 200 (OK)
+                .andExpect(view().name("create-student"));  // Espera que la vista devuelta sea "create-student"
+    }
+
+    @Test
+    // El test verifica que se puede guardar un estudiante
+    public void shouldSaveStudent() throws Exception {
+        // Crea un estudiante
+        Student student = new Student("James", "Gosling", "jgosling@example.com");
+
+        // Simula la respuesta del método saveStudent de studentService
+        given(studentService.saveStudent(any(Student.class))).willReturn(student);
+
+        // Realiza una solicitud POST a "/students"
+        mockMvc.perform(post("/students")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED))  // Establece el tipo de contenido de la solicitud
+                .andExpect(status().is3xxRedirection())  // Espera que el estado HTTP sea de redirección (3xx)
+                .andExpect(redirectedUrl("/students"));  // Espera que la URL de redirección sea "/students"
+    }
+
+    @Test
+    // El test verifica que se puede actualizar un estudiante
+    public void shouldUpdateStudent() throws Exception {
+        // Crea un estudiante
+        Student student = new Student("James", "Gosling", "jgosling@example.com");
+        student.setId(1L);
+
+        // Simula la respuesta del método getStudentById y updatedStudent de studentService
+        given(studentService.getStudentById(anyLong())).willReturn(Optional.of(student));
+        given(studentService.updatedStudent(any(Student.class))).willReturn(student);
+
+        // Realiza una solicitud POST a "/students/1"
+        mockMvc.perform(post("/students/1")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED))  // Establece el tipo de contenido de la solicitud
+                .andExpect(status().is3xxRedirection())  // Espera que el estado HTTP sea de redirección (3xx)
+                .andExpect(redirectedUrl("/students"));  // Espera que la URL de redirección sea "/students"
+    }
+
+    @Test
+    // El test verifica que se puede eliminar un estudiante
+    public void shouldDeleteStudent() throws Exception {
+        // Simula la respuesta del método deleteStudentById de studentService
+        doNothing().when(studentService).deleteStudentById(anyLong());
+
+        // Realiza una solicitud GET a "/students-delete/1"
+        mockMvc.perform(get("/students-delete/1"))
+                .andExpect(status().is3xxRedirection())  // Espera que el estado HTTP sea de redirección (3xx)
+                .andExpect(redirectedUrl("/students"));  // Espera que la URL de redirección sea "/students"
+    }
 }
+
+//* Página para recomendar https://plugins.jenkins.io/ 
