@@ -16,7 +16,7 @@ public class StudentController {
 
   private static final Logger logger = LoggerFactory.getLogger(StudentController.class);
   private static final String STUDENT_REDIRECT = "redirect:/students";
-
+  //* mejoras para sonar */
   private final IStudentService service;
 
   @Autowired
