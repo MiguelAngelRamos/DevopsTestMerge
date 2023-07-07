@@ -56,3 +56,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Sonar scanner files
+.scannerwork
