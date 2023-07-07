@@ -24,6 +24,6 @@ public class DevopsApplication implements CommandLineRunner {
  Student student2 = new Student("Camila", "Marquez", "cmarquez@gmail.com");
     repository.save(student1);
     repository.save(student2);
-
+    // Estos son usuarios de prueba
   }
 }
