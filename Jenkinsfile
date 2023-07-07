@@ -7,6 +7,11 @@ pipeline {
   environment {
     DOCKER_TAG = sh(script: 'echo $BUILD_NUMBER', returnStdout: true).trim()
   }
+  options {
+    // Ejecutar el pipeline como usuario root
+    runAsUser('root')
+  }
+
   stages {
     stage('Checkout') {
       steps {
@@ -24,8 +29,6 @@ pipeline {
     }
     stage('Build Image') {
       steps {
-        // Clonar el repositorio o realizar cualquier otra operación previa al build
-        // Puedes usar 'git clone' o cualquier otro comando necesario
         // Construir la imagen del Dockerfile con el tag semántico
         sh "docker build -t iseco/devopsmerge:${DOCKER_TAG} ."
       }
