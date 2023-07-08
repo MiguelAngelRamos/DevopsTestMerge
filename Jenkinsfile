@@ -23,6 +23,25 @@ pipeline {
         sh "mvn clean package"
       }
     }
+    stage('Archive') {
+      steps {
+        archiveArtifacts artifacts: "**/target/*.jar", fingerprint: true
+      }
+    }    
+    stage('Sonar Scanner') {
+      steps {
+        withSonarQubeEnv('SonarQube') { 
+          sh 'mvn sonar:sonar -Dsonar.projectKey=GS -Dsonar.sources=src/main/java/com/kibernumacademy/devops -Dsonar.tests=src/test/java/com/kibernumacademy/devops -Dsonar.java.binaries=.'
+        }
+      }
+    }
+    stage('Quality Gate'){
+      steps{
+        timeout(time:1, unit:'HOURS'){
+          waitForQualityGate abortPipeline:true
+        }
+      }
+    }
     stage('Build Image') {
       steps {
         script {
@@ -47,13 +66,6 @@ pipeline {
           // Hacer push de la imagen con el SHA commit abreviado como tag a Docker Hub
           sh "docker push iseco/devopsmerge:${gitCommitShort}"
           sh "docker push iseco/devopsmerge:latest"
-        }
-      }
-    }
-    stage('Sonar Scanner') {
-      steps {
-        withSonarQubeEnv('SonarQube') { 
-          sh 'mvn sonar:sonar -Dsonar.projectKey=GS -Dsonar.sources=src/main/java/com/kibernumacademy/miapp -Dsonar.tests=src/test/java/com/kibernumacademy/miapp -Dsonar.java.binaries=.'
         }
       }
     }
