@@ -26,10 +26,10 @@ pipeline {
     stage('Build Image') {
       steps {
         script {
-          def gitCommit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-          echo "Git SHA commit: ${gitCommit}"
-          // Construir la imagen del Dockerfile con el SHA del commit como tag
-          sh "docker build -t iseco/devopsmerge:${gitCommit} ."
+          def gitCommitShort = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+          echo "Git SHA commit: ${gitCommitShort}"
+          // Construir la imagen del Dockerfile con el SHA commit abreviado como tag
+          sh "docker build -t iseco/devopsmerge:${gitCommitShort} ."
         }
       }
     } 
@@ -40,11 +40,11 @@ pipeline {
         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
           sh "docker login -u $DOCKERHUB_USERNAME -p '$DOCKERHUB_PASSWORD'"
         }
-        // Obtener el SHA del commit nuevamente en esta etapa para usarlo en el push
+        // Obtener el SHA commit abreviado nuevamente en esta etapa para usarlo en el push
         script {
-          def gitCommit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim() 
-          // Hacer push de la imagen con el SHA del commit como tag a Docker Hub
-          sh "docker push iseco/devopsmerge:${gitCommit}"
+          def gitCommitShort = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim() 
+          // Hacer push de la imagen con el SHA commit abreviado como tag a Docker Hub
+          sh "docker push iseco/devopsmerge:${gitCommitShort}"
         }
       }
     }
