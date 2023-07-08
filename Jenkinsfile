@@ -33,7 +33,7 @@ pipeline {
       steps {
         // Iniciar sesión en Docker Hub
         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
-            sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+            sh "docker login -u $DOCKERHUB_USERNAME -p '$DOCKERHUB_PASSWORD'"
         }
         
         // Hacer push de la imagen con el tag semántico a Docker Hub
