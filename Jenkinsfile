@@ -42,30 +42,27 @@ pipeline {
     //     }
     //   }
     // }
-    stage('Build Image') {
+    stage('Build and Push Image') {
       steps {
-        script {
-          def gitCommitShort = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-          echo "Git SHA commit: ${gitCommitShort}"
-          // Construir la imagen del Dockerfile con el SHA commit abreviado como tag
-          sh "docker build -t iseco/devopsmerge:${gitCommitShort} ."
-          sh "docker build -t iseco/devopsmerge:latest ."
-        }
-      }
-    } 
-    
-    stage('Push Image') {
-      steps {
-        // Iniciar sesión en Docker Hub
-        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
-          sh "docker login -u $DOCKERHUB_USERNAME -p '$DOCKERHUB_PASSWORD'"
-        }
-        // Obtener el SHA commit abreviado nuevamente en esta etapa para usarlo en el push
-        script {
-          def gitCommitShort = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim() 
-          // Hacer push de la imagen con el SHA commit abreviado como tag a Docker Hub
-          sh "docker push iseco/devopsmerge:${gitCommitShort}"
-          sh "docker push iseco/devopsmerge:latest"
+        withCredentials([string(credentialsId: 'ecr-repo-uri', variable: 'ECR_REPO_URI')]) {
+          script {
+            def gitCommitShort = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+            def imageName = "${ECR_REPO_URI}:${gitCommitShort}"
+            echo "Git SHA commit (Short): ${gitCommitShort}"
+            echo "ECR Image Name: ${imageName}"
+            
+            // Construir y etiquetar la imagen del Dockerfile con el SHA commit abreviado
+            sh "docker build -t ${imageName} ."
+            
+            withCredentials([usernamePassword(credentialsId: 'ecr-credentials', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+              sh "aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID"
+              sh "aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY"
+              sh "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${imagenName}"
+            }
+
+            // Subir la imagen a ECR
+            sh "docker push ${imageName}"
+          }
         }
       }
     }
